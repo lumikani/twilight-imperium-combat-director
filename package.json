@@ -1,0 +1,37 @@
+{
+  "name": "twilight-imperium-combat-director-cli",
+  "version": "0.1.0",
+  "description": "An app that helps with Twilight Imperium 4th edition",
+  "main": "index.ts",
+  "scripts": {
+    "build": "rm -rf build/ && tsc",
+    "start": "node build/index.js"
+  },
+  "keywords": [
+    "twilight",
+    "imperium"
+  ],
+  "author": "Lumi Kallioniemi",
+  "license": "MIT",
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "dependencies": {
+    "@types/inquirer": "^7.3.1",
+    "inquirer": "^7.3.3",
+    "typescript": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.6",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
+    "@typescript-eslint/parser": "^4.6.0",
+    "eslint": "^7.12.1",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "husky": "^4.3.0",
+    "prettier": "^2.1.2",
+    "pretty-quick": "^3.1.0"
+  }
+}
