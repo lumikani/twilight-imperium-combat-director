@@ -36,9 +36,8 @@ const createShip = (
   capacity,
 })
 
-const range = (start: number, end: number) => {
-  const length = end - start
-  return Array.from({ length }, (_, i) => start + i)
+const range = (end: number) => {
+  return Array.from({ length: end }, (_, i) => i)
 }
 
 prompt(fleetCreationQuestions).then((answers) => {
@@ -50,7 +49,7 @@ prompt(fleetCreationQuestions).then((answers) => {
     ? true
     : false
   const shipsCapacity = Number.parseInt(answers.shipsCapacity)
-  const newFleet = range(1, numShips).map(() =>
+  const newFleet = range(numShips).map(() =>
     createShip(combat, shipsHaveSustainDamage, shipsCapacity)
   )
   state.attacker.fleets = [...state.attacker.fleets, newFleet]
