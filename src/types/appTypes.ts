@@ -1,18 +1,21 @@
-interface PlayerState {
+import { produce } from 'immer'
+
+export interface PlayerState {
   fleets: Fleet[]
 }
 
-interface State {
+export interface State {
   attacker: PlayerState
   defender: PlayerState
 }
 
-interface Question {
+export interface Question {
   type: 'input'
   name: string
   message: string
 }
 
-interface Context {
+export interface Context {
   getUserInput: (questions: Question[]) => Promise<any>
+  produce: typeof produce
 }
