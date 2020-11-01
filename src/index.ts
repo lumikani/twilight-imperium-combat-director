@@ -1,27 +1,39 @@
 import { produce } from 'immer'
 import { prompt } from 'inquirer'
-import { Context, State, Question } from './types/appTypes'
+import { Context, Question, AppState } from './types/appTypes'
 
 import { baseState } from './stateManager/stateManager'
 import fleetSetupState from './states/fleetSetupState'
 
-type AppState = (context: Context, state: State) => Promise<[State, boolean]>
-
-const states: AppState[] = [fleetSetupState]
+const states: Record<string, AppState> = {
+  [fleetSetupState.stateName]: fleetSetupState,
+}
 
 const getUserInput = async (questions: Question[]) => await prompt(questions)
 
-const context: Context = {
-  getUserInput,
-  produce,
+const main = async () => {
+  const context: Context = {
+    getUserInput,
+    produce,
+  }
+
+  let nextAppStateName = fleetSetupState.stateName
+  let state = baseState
+
+  while (nextAppStateName !== '') {
+    const appState = states[nextAppStateName]
+    const appStateResult = await appState.runState(context, state)
+
+    nextAppStateName = appStateResult[1]
+    state = appStateResult[0]
+  }
 }
 
-let shouldRepeat = true
-let state = baseState
-states.forEach(async (item) => {
-  while (shouldRepeat) {
-    let stepResult = await item(context, state)
-    shouldRepeat = stepResult[1]
-    state = stepResult[0]
+;(async () => {
+  try {
+    const text = await main()
+    console.log(text)
+  } catch (error) {
+    console.error(error)
   }
-})
+})()
