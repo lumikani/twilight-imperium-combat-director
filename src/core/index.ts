@@ -1,6 +1,10 @@
 import fleetSetupState from './appStates/fleetSetupState'
 import { baseStore, setAppState, Store } from './store/store'
 
+export const log = (data: any) => {
+  console.log(JSON.stringify(data, null, 2))
+}
+
 const INITIAL_APP_STATE = fleetSetupState.stateName
 
 export type AppStateParameters = string[]
@@ -11,7 +15,7 @@ export interface AppState {
     store: Store,
     parameters: AppStateParametersObject
   ) => [Store, string]
-  parameters: AppStateParameters
+  parameters: string[]
 }
 
 let store: Store
@@ -27,7 +31,7 @@ export default {
     store = baseStore
 
     store = setAppState(store, INITIAL_APP_STATE)
-    return selectAppState(store)
+    return appStates[selectAppState(store)!].parameters
   },
   moveToNextStep: (appStateParameters: AppStateParametersObject) => {
     if (store.appState === null) {
@@ -40,7 +44,11 @@ export default {
     )
     store = newStore
 
+    if (nextAppStateName === '') {
+      return
+    }
+
     store = setAppState(store, nextAppStateName)
-    return selectAppState(store)
+    return appStates[selectAppState(store)!].parameters
   },
 }
