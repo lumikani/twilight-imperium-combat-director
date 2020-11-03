@@ -1,64 +1,47 @@
-import { Store, addAttackerFleet } from '../store/store'
+import { Store, setAttackerFleets, setDefenderFleets } from '../store/store'
 import { AppState } from '..'
+import { log } from '../'
 
-export const STATE_NAME = 'FLEET_SETUP_STATE'
-export const SHIPS_QUANTITY = 'SHIPS_QUANTITY'
-export const SHIPS_COMBAT_VALUE = 'SHIPS_COMBAT_VALUE'
-export const SHIPS_HAVE_SUSTAIN_DAMAGE = 'SHIPS_HAVE_SUSTAIN_DAMAGE'
-export const SHIPS_CAPACITY = 'SHIPS_CAPACITY'
-export const ADD_ANOTHER_FLEET = 'ADD_ANOTHER_FLEET'
+const APP_STATE_NAME = 'FLEET_SETUP_STATE'
+const NEXT_APP_STATE_NAME = ''
 
-const fleetSetupStateParameters: string[] = [
-  SHIPS_QUANTITY,
-  SHIPS_COMBAT_VALUE,
-  SHIPS_HAVE_SUSTAIN_DAMAGE,
-  SHIPS_CAPACITY,
-  ADD_ANOTHER_FLEET,
-]
+export type Fleet = Ship[]
 
-const createShip = (
-  combat: Combat,
-  hasSustainDamage: HasSustainDamage,
+export type CombatValue = number
+export type HasSustainDamage = boolean
+export type Capacity = number
+export interface Ship {
+  combatValue: CombatValue
+  hasSustainDamage: HasSustainDamage
   capacity: Capacity
-): Ship => ({
-  combat,
-  hasSustainDamage,
-  capacity,
-})
+}
 
-const range = (end: number) => Array.from({ length: end }, (_, i) => i)
+export const FLEET_SETUP_ATTACKER = 'FLEET_SETUP_ATTACKER'
+export const FLEET_SETUP_DEFENDER = 'FLEET_SETUP_DEFENDER'
 
-interface FleetSetupStateParametersType {
-  [SHIPS_QUANTITY]: number
-  [SHIPS_COMBAT_VALUE]: number
-  [SHIPS_HAVE_SUSTAIN_DAMAGE]: boolean
-  [SHIPS_CAPACITY]: number
-  [ADD_ANOTHER_FLEET]: boolean
+type AppStateParameters = object
+interface FleetSetupAppStateParameters extends AppStateParameters {
+  [FLEET_SETUP_DEFENDER]: Fleet[]
+  [FLEET_SETUP_ATTACKER]: Fleet[]
 }
 
 const doTheThing = (
-  state: Store,
-  parameters: FleetSetupStateParametersType
+  store: Store,
+  parameters: FleetSetupAppStateParameters
 ): [Store, string] => {
-  const shipsQuantity = parameters[SHIPS_QUANTITY]
-  const shipsCombatValue = parameters[SHIPS_COMBAT_VALUE]
-  const shipsHaveSustainDamage = parameters[SHIPS_HAVE_SUSTAIN_DAMAGE]
-  const shipsCapacity = parameters[SHIPS_CAPACITY]
-  const addAnotherFleet = parameters[ADD_ANOTHER_FLEET]
-  const newFleet = range(shipsQuantity).map(() =>
-    createShip(shipsCombatValue, shipsHaveSustainDamage, shipsCapacity)
-  )
+  log(parameters)
+  const attackerFleets = parameters[FLEET_SETUP_ATTACKER]
+  let nextStore = setAttackerFleets(store, attackerFleets)
+  const defenderFleets = parameters[FLEET_SETUP_DEFENDER]
+  nextStore = setDefenderFleets(nextStore, defenderFleets)
 
-  const nextDataState = addAttackerFleet(state, newFleet)
-
-  const nextAppState = addAnotherFleet ? STATE_NAME : ''
-  return [nextDataState, nextAppState]
+  return [nextStore, NEXT_APP_STATE_NAME]
 }
 
 const fleetAppState: AppState = {
-  stateName: STATE_NAME,
+  stateName: APP_STATE_NAME,
   runState: doTheThing,
-  parameters: fleetSetupStateParameters,
+  parameters: [FLEET_SETUP_DEFENDER, FLEET_SETUP_ATTACKER],
 }
 
 export default fleetAppState

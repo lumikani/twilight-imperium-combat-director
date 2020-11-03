@@ -1,4 +1,5 @@
 import produce, { Draft } from 'immer'
+import { Fleet } from '../appStates/fleetSetupState'
 
 export interface PlayerStore {
   fleets: Fleet[]
@@ -26,6 +27,14 @@ export const setAppState = produce(
   }
 )
 
-export const addAttackerFleet = produce((draft: Draft<Store>, fleet: Fleet) => {
-  draft.attacker.fleets.push(fleet)
-})
+export const setAttackerFleets = produce(
+  (draft: Draft<Store>, fleets: Fleet[]) => {
+    draft.attacker.fleets = fleets
+  }
+)
+
+export const setDefenderFleets = produce(
+  (draft: Draft<Store>, fleets: Fleet[]) => {
+    draft.defender.fleets = fleets
+  }
+)

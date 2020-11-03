@@ -1,7 +1,11 @@
-import { Question, PromptType } from './types/appTypes'
+export type PromptType = 'input' | 'confirm'
+export type DefaultValueType = string | number | boolean
 
-export const log = (data: any) => {
-  console.log(JSON.stringify(data, null, 2))
+export interface Question {
+  type: PromptType
+  name: string
+  message: string
+  default?: DefaultValueType
 }
 
 const createInquirerQuestion = (
