@@ -3,7 +3,7 @@ import { AppState } from '..'
 import { log } from '../'
 
 const APP_STATE_NAME = 'FLEET_SETUP_STATE'
-const NEXT_APP_STATE_NAME = ''
+const NEXT_APP_STATE_NAME = 'COMBAT_STATE'
 
 export type Fleet = Ship[]
 
@@ -42,6 +42,9 @@ const fleetAppState: AppState = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
   parameters: [FLEET_SETUP_DEFENDER, FLEET_SETUP_ATTACKER],
+  getStateEntryValues: () => {
+    return null
+  },
 }
 
 export default fleetAppState

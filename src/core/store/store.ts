@@ -3,6 +3,7 @@ import { Fleet } from '../appStates/fleetSetupState'
 
 export interface PlayerStore {
   fleets: Fleet[]
+  hits: number
 }
 
 export interface Store {
@@ -15,9 +16,11 @@ export const baseStore: Store = Object.freeze({
   appState: null,
   attacker: {
     fleets: [],
+    hits: 0,
   },
   defender: {
     fleets: [],
+    hits: 0,
   },
 })
 
@@ -38,3 +41,11 @@ export const setDefenderFleets = produce(
     draft.defender.fleets = fleets
   }
 )
+
+export const setAttackerHits = produce((draft: Draft<Store>, hits: number) => {
+  draft.attacker.hits = hits
+})
+
+export const setDefenderHits = produce((draft: Draft<Store>, hits: number) => {
+  draft.defender.hits = hits
+})

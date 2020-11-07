@@ -1,11 +1,12 @@
-import fleetSetupState from './appStates/fleetSetupState'
+import combatAppState from './appStates/combatState'
+import fleetAppSetupState from './appStates/fleetSetupState'
 import { baseStore, setAppState, Store } from './store/store'
 
 export const log = (data: any) => {
   console.log(JSON.stringify(data, null, 2))
 }
 
-const INITIAL_APP_STATE = fleetSetupState.stateName
+const INITIAL_APP_STATE = fleetAppSetupState.stateName
 
 export type AppStateParameters = string[]
 export type AppStateParametersObject = any
@@ -16,12 +17,14 @@ export interface AppState {
     parameters: AppStateParametersObject
   ) => [Store, string]
   parameters: string[]
+  getStateEntryValues: (store: Store) => any
 }
 
 let store: Store
 
 const appStates: Record<string, AppState> = {
-  [fleetSetupState.stateName]: fleetSetupState,
+  [fleetAppSetupState.stateName]: fleetAppSetupState,
+  [combatAppState.stateName]: combatAppState,
 }
 
 const selectAppState = (store: Store) => store.appState
@@ -45,10 +48,11 @@ export default {
     store = newStore
 
     if (nextAppStateName === '') {
-      return
+      return null
     }
 
     store = setAppState(store, nextAppStateName)
-    return appStates[selectAppState(store)!].parameters
+    const nextAppState = appStates[selectAppState(store)!]
+    return [nextAppState.getStateEntryValues(store), nextAppState.parameters]
   },
 }

@@ -4,25 +4,41 @@ import {
   FLEET_SETUP_ATTACKER,
 } from '../core/appStates/fleetSetupState'
 import { AppStateParameters, AppStateParametersObject } from '../core/'
-import { createFleetSetupRenderer } from './renderers'
+import {
+  createCombatStateRenderer,
+  createFleetSetupRenderer,
+} from './renderers'
+import {
+  COMBAT_ROLLS_ATTACKER,
+  COMBAT_ROLLS_DEFENDER,
+} from '../core/appStates/combatState'
 
 const appStateRenderers: Record<string, Function> = {
   [FLEET_SETUP_DEFENDER]: createFleetSetupRenderer('defender'),
   [FLEET_SETUP_ATTACKER]: createFleetSetupRenderer('attacker'),
+  [COMBAT_ROLLS_ATTACKER]: createCombatStateRenderer('attacker'),
+  [COMBAT_ROLLS_DEFENDER]: createCombatStateRenderer('defender'),
 }
 
 const main = async () => {
-  let nextStateParameters: AppStateParameters | undefined = core.beginCombat()
+  let nextStateParameters: AppStateParameters = core.beginCombat()
+  let nextStateInitialData: any = {}
 
-  while (nextStateParameters !== undefined && nextStateParameters.length > 0) {
+  while (nextStateParameters.length > 0) {
     const parameters: AppStateParametersObject = {}
     for (const nextStateParameter of nextStateParameters) {
       parameters[nextStateParameter] = await appStateRenderers[
         nextStateParameter
-      ]()
+      ](nextStateInitialData)
     }
 
-    nextStateParameters = core.moveToNextStep(parameters)
+    const nextState = core.moveToNextStep(parameters)
+    if (nextState === null) {
+      return
+    }
+
+    nextStateInitialData = nextState[0]
+    nextStateParameters = nextState[1]
   }
 }
 
