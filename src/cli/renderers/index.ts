@@ -8,6 +8,12 @@ import {
   Capacity,
 } from '../../core/appStates/fleetSetupState'
 
+import {
+  Combatant,
+  CombatStateEntryValues,
+  RollInstruction,
+} from '../../core/appStates/combatState'
+
 export const STATE_NAME = 'FLEET_SETUP_STATE'
 export const SHIPS_QUANTITY = 'SHIPS_QUANTITY'
 export const SHIPS_COMBAT_VALUE = 'SHIPS_COMBAT_VALUE'
@@ -60,7 +66,7 @@ const renderFleetSetup = async (combatant: string) => {
     const shipsQuantity = Number.parseInt(answers[SHIPS_QUANTITY])
     const shipsCombatValue = Number.parseInt(answers[SHIPS_COMBAT_VALUE])
     const shipsHaveSustainDamage = answers[SHIPS_HAVE_SUSTAIN_DAMAGE]
-    const shipsCapacity = Number.parseInt(SHIPS_CAPACITY)
+    const shipsCapacity = Number.parseInt(answers[SHIPS_CAPACITY])
 
     const newFleet = createFleet(
       shipsQuantity,
@@ -83,3 +89,26 @@ const renderFleetSetup = async (combatant: string) => {
 
 export const createFleetSetupRenderer = (combatant: string) => () =>
   renderFleetSetup(combatant)
+
+/* Combat state renderer */
+
+const COMBAT_ROLL = 'COMBAT_ROLL'
+
+const renderCombatRolling = async (
+  combatant: Combatant,
+  rollInstructions: RollInstruction[]
+) => {
+  let numberOfHits = 0
+  for (const rollInstruction of rollInstructions) {
+    const { difficulty, numberOfRolls } = rollInstruction
+    const questionMsg = `${combatant.toUpperCase()}! Roll ${numberOfRolls} dice. How many had a result ≥${difficulty}?`
+    const answer = await prompt([createQuestion(COMBAT_ROLL, questionMsg, 0)])
+    numberOfHits = numberOfHits + Number.parseInt(answer.COMBAT_ROLL)
+  }
+
+  return numberOfHits
+}
+
+export const createCombatStateRenderer = (combatant: Combatant) => (
+  stateEntryData: CombatStateEntryValues
+) => renderCombatRolling(combatant, stateEntryData[combatant])
