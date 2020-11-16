@@ -1,6 +1,5 @@
 import { Store, setAttackerHits, setDefenderHits } from '../store/store'
 import { AppState } from '..'
-import { log } from '../'
 
 const APP_STATE_NAME = 'COMBAT_STATE'
 const NEXT_APP_STATE_NAME = ''
@@ -18,7 +17,6 @@ const doTheThing = (
   store: Store,
   parameters: CombatAppStateParameters
 ): [Store, string] => {
-  log(parameters)
   const attackerHits = parameters[COMBAT_ROLLS_ATTACKER]
   let nextStore = setAttackerHits(store, attackerHits)
   const defenderHits = parameters[COMBAT_ROLLS_DEFENDER]

@@ -1,18 +1,13 @@
 import { createBooleanChoice, createQuestion } from '../utils'
 import { prompt } from 'inquirer'
-import {
-  Ship,
-  Fleet,
-  CombatValue,
-  HasSustainDamage,
-  Capacity,
-} from '../../core/appStates/fleetSetupState'
+import { Fleet } from '../../core/appStates/fleetSetupState'
 
 import {
   Combatant,
   CombatStateEntryValues,
   RollInstruction,
 } from '../../core/appStates/combatState'
+import { createFleet } from '../../core/utils'
 
 export const STATE_NAME = 'FLEET_SETUP_STATE'
 export const SHIPS_QUANTITY = 'SHIPS_QUANTITY'
@@ -21,29 +16,6 @@ export const SHIPS_HAVE_SUSTAIN_DAMAGE = 'SHIPS_HAVE_SUSTAIN_DAMAGE'
 export const SHIPS_CAPACITY = 'SHIPS_CAPACITY'
 
 export const ADD_ANOTHER_FLEET = 'ADD_ANOTHER_FLEET'
-
-const createShip = (
-  combatValue: CombatValue,
-  hasSustainDamage: HasSustainDamage,
-  capacity: Capacity
-): Ship => ({
-  combatValue,
-  hasSustainDamage,
-  capacity,
-})
-
-const range = (end: number) => Array.from({ length: end }, (_, i) => i)
-
-const createFleet = (
-  shipsQuantity: number,
-  shipsCombatValue: CombatValue,
-  shipsHaveSustainDamage: HasSustainDamage,
-  shipsCapacity: Capacity
-): Fleet => {
-  return range(shipsQuantity).map(() =>
-    createShip(shipsCombatValue, shipsHaveSustainDamage, shipsCapacity)
-  )
-}
 
 const fleetCreationQuestionsMap = [
   createQuestion(SHIPS_COMBAT_VALUE, 'What is the combat value of the ships?'),
