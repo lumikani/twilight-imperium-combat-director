@@ -1,3 +1,4 @@
+import assignHitsState from './appStates/assignHitsState'
 import combatAppState from './appStates/combatState'
 import fleetAppSetupState from './appStates/fleetSetupState'
 import { baseStore, setAppState, Store } from './store/store'
@@ -25,6 +26,7 @@ let store: Store
 const appStates: Record<string, AppState> = {
   [fleetAppSetupState.stateName]: fleetAppSetupState,
   [combatAppState.stateName]: combatAppState,
+  [assignHitsState.stateName]: assignHitsState,
 }
 
 const selectAppState = (store: Store) => store.appState
@@ -41,6 +43,9 @@ export default {
       throw Error('Combat not initialized: call beginCombat() first!')
     }
 
+    // Run the logic for the next state, giving the current store and
+    // parameters required by the state as inputs. Running the state logic will
+    // return the name of the next state.
     const [newStore, nextAppStateName] = appStates[store.appState].runState(
       store,
       appStateParameters
@@ -53,6 +58,9 @@ export default {
 
     store = setAppState(store, nextAppStateName)
     const nextAppState = appStates[selectAppState(store)!]
+    // Return the entry values/parameters expected by the next state, so that
+    // the renderer can gather those values and then provide them for the next
+    // state.
     return [nextAppState.getStateEntryValues(store), nextAppState.parameters]
   },
 }

@@ -1,8 +1,13 @@
-import { Store, setAttackerHits, setDefenderHits } from '../store/store'
+import {
+  Store,
+  setHitsScoredAttacker,
+  setHitsScoredDefender,
+} from '../store/store'
 import { AppState } from '..'
+import assignHitsAppState from './assignHitsState'
 
 const APP_STATE_NAME = 'COMBAT_STATE'
-const NEXT_APP_STATE_NAME = ''
+const NEXT_APP_STATE_NAME = assignHitsAppState.stateName
 
 export const COMBAT_ROLLS_ATTACKER = 'COMBAT_ROLLS_ATTACKER'
 export const COMBAT_ROLLS_DEFENDER = 'COMBAT_ROLLS_DEFENDER'
@@ -18,9 +23,9 @@ const doTheThing = (
   parameters: CombatAppStateParameters
 ): [Store, string] => {
   const attackerHits = parameters[COMBAT_ROLLS_ATTACKER]
-  let nextStore = setAttackerHits(store, attackerHits)
+  let nextStore = setHitsScoredAttacker(store, attackerHits)
   const defenderHits = parameters[COMBAT_ROLLS_DEFENDER]
-  nextStore = setDefenderHits(nextStore, defenderHits)
+  nextStore = setHitsScoredDefender(nextStore, defenderHits)
 
   return [nextStore, NEXT_APP_STATE_NAME]
 }

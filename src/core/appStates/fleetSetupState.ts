@@ -1,8 +1,9 @@
 import { Store, setAttackerFleets, setDefenderFleets } from '../store/store'
 import { AppState } from '..'
+import combatAppState from './combatState'
 
 const APP_STATE_NAME = 'FLEET_SETUP_STATE'
-const NEXT_APP_STATE_NAME = 'COMBAT_STATE'
+const NEXT_APP_STATE_NAME = combatAppState.stateName
 
 export type Fleet = Ship[]
 

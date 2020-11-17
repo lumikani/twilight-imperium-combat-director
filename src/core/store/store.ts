@@ -1,9 +1,10 @@
 import produce, { Draft } from 'immer'
+import { HitsAssignment } from '../appStates/assignHitsState'
 import { Fleet } from '../appStates/fleetSetupState'
 
 export interface PlayerStore {
   fleets: Fleet[]
-  hits: number
+  hitsScored: number
 }
 
 export interface Store {
@@ -16,11 +17,11 @@ export const baseStore: Store = Object.freeze({
   appState: null,
   attacker: {
     fleets: [],
-    hits: 0,
+    hitsScored: 0,
   },
   defender: {
     fleets: [],
-    hits: 0,
+    hitsScored: 0,
   },
 })
 
@@ -42,10 +43,38 @@ export const setDefenderFleets = produce(
   }
 )
 
-export const setAttackerHits = produce((draft: Draft<Store>, hits: number) => {
-  draft.attacker.hits = hits
-})
+export const setHitsScoredAttacker = produce(
+  (draft: Draft<Store>, hits: number) => {
+    draft.attacker.hitsScored = hits
+  }
+)
 
-export const setDefenderHits = produce((draft: Draft<Store>, hits: number) => {
-  draft.defender.hits = hits
-})
+export const setHitsScoredDefender = produce(
+  (draft: Draft<Store>, hits: number) => {
+    draft.defender.hitsScored = hits
+  }
+)
+
+export const assignHitsReceivedAttacker = produce(
+  (draft: Draft<Store>, hitsAssignment: HitsAssignment) => {
+    const { fleetIdentifier, numberOfAssignments } = hitsAssignment
+    draft.attacker.fleets[fleetIdentifier].splice(0, numberOfAssignments)
+    draft.defender.hitsScored = draft.defender.hitsScored - numberOfAssignments
+  }
+)
+
+export const assignHitsReceivedDefender = produce(
+  (draft: Draft<Store>, hitsAssignment: HitsAssignment) => {
+    const { fleetIdentifier, numberOfAssignments } = hitsAssignment
+    draft.defender.fleets[fleetIdentifier].splice(0, numberOfAssignments)
+    draft.attacker.hitsScored = draft.attacker.hitsScored - numberOfAssignments
+  }
+)
+
+export const getAttackerFleetSize = (store: Store) => {
+  return store.attacker.fleets.reduce((acc, fleet) => acc + fleet.length, 0)
+}
+
+export const getDefenderFleetSize = (store: Store) => {
+  return store.defender.fleets.reduce((acc, fleet) => acc + fleet.length, 0)
+}
