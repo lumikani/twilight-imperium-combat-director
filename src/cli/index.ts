@@ -44,8 +44,7 @@ const main = async () => {
 
 export default async () => {
   try {
-    const text = await main()
-    console.log(text)
+    await main()
   } catch (error) {
     console.error(error)
   }
