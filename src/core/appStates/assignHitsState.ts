@@ -67,18 +67,52 @@ const doTheThing = (
 }
 
 type HitsScored = PlayerStore['hitsScored']
+type FleetWithSustainDamages = [number, number]
 
 export interface AssignHitsStateEntryValues {
-  attacker: HitsScored
-  defender: HitsScored
+  attacker: {
+    hitsToAssign: HitsScored
+    potentialSustainDamages: FleetWithSustainDamages[]
+  }
+  defender: {
+    hitsToAssign: HitsScored
+    potentialSustainDamages: FleetWithSustainDamages[]
+  }
+}
+
+const getSustainDamageFleetIdentifiersAndAmounts = (
+  store: Store,
+  combatant: Combatant
+): FleetWithSustainDamages[] => {
+  return store[combatant].fleets.reduce(
+    (acc: FleetWithSustainDamages[], fleet, index) => {
+      if (fleet.length > 0 && fleet[0].hasSustainDamage) {
+        acc.push([index, fleet.length])
+      }
+      return acc
+    },
+    []
+  )
 }
 
 const assignHitsAppState: AppState = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
   getStateEntryValues: (store: Store): AssignHitsStateEntryValues => ({
-    attacker: getHitsScored(store, 'defender'),
-    defender: getHitsScored(store, 'attacker'),
+    attacker: {
+      hitsToAssign: getHitsScored(store, 'defender'),
+      potentialSustainDamages: getSustainDamageFleetIdentifiersAndAmounts(
+        store,
+        'attacker'
+      ),
+    },
+    defender: {
+      hitsToAssign: getHitsScored(store, 'attacker'),
+      potentialSustainDamages: getSustainDamageFleetIdentifiersAndAmounts(
+        store,
+        'defender'
+      ),
+    },
   }),
   parameters: [ASSIGNED_HITS_ATTACKER, ASSIGNED_HITS_DEFENDER],
 }

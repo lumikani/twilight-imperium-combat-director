@@ -32,7 +32,7 @@ const ATTACKER_SHIP: ShipTuple = [
 
 const DEFENDER_SHIPS_QUANTITY = 3
 const DEFENDER_SHIPS_COMBAT_VALUE = 3
-const DEFENDER_SHIPS_HAS_SUSTAIN_DAMAGE = false
+const DEFENDER_SHIPS_HAS_SUSTAIN_DAMAGE = true
 const DEFENDER_SHIPS_CAPACITY = 0
 
 const DEFENDER_SHIP: ShipTuple = [
@@ -83,8 +83,8 @@ const VALID_STATES: Record<string, AppStateIOData> = {
   },
   [assignHitsAppState.stateName]: {
     receivedNextStateInitialData: {
-      attacker: 2,
-      defender: 3,
+      attacker: { hitsToAssign: 2, potentialSustainDamages: [] },
+      defender: { hitsToAssign: 3, potentialSustainDamages: [[0, 3]] },
     },
     requestedParameters: [ASSIGNED_HITS_ATTACKER, ASSIGNED_HITS_DEFENDER],
     parameters: {
@@ -182,8 +182,8 @@ describe('Core logic tests', () => {
     const nextState = core.moveToNextStep(parameters)!
 
     const expectedNextStateInitialData = {
-      attacker: 0,
-      defender: 1,
+      attacker: { hitsToAssign: 0, potentialSustainDamages: [] },
+      defender: { hitsToAssign: 1, potentialSustainDamages: [[0, 1]] },
     }
 
     expect(nextState[0]).toEqual(expectedNextStateInitialData)
@@ -214,8 +214,14 @@ describe('Core logic tests', () => {
     let nextState = core.moveToNextStep(combatStateParametersFirst)!
 
     const expectedNextStateInitialData = {
-      attacker: defenderHitsScored,
-      defender: attackerHitsScored,
+      attacker: {
+        hitsToAssign: defenderHitsScored,
+        potentialSustainDamages: [],
+      },
+      defender: {
+        hitsToAssign: attackerHitsScored,
+        potentialSustainDamages: [[0, 3]],
+      },
     }
 
     expect(nextState[0]).toEqual(expectedNextStateInitialData)!
