@@ -77,8 +77,8 @@ const assignHitsAppState: AppState = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
   getStateEntryValues: (store: Store): AssignHitsStateEntryValues => ({
-    attacker: getHitsScored(store, 'attacker'),
-    defender: getHitsScored(store, 'defender'),
+    attacker: getHitsScored(store, 'defender'),
+    defender: getHitsScored(store, 'attacker'),
   }),
   parameters: [ASSIGNED_HITS_ATTACKER, ASSIGNED_HITS_DEFENDER],
 }

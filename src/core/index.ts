@@ -3,9 +3,10 @@ import combatAppState from './appStates/combatState'
 import fleetAppSetupState from './appStates/fleetSetupState'
 import { baseStore, setAppState, Store } from './store/store'
 
-export const log = (data: any) => {
-  console.log(JSON.stringify(data, null, 2))
-}
+// Handy for debugging values in the store etc
+// export const log = (data: any) => {
+//   console.log(JSON.stringify(data, null, 2))
+// }
 
 const INITIAL_APP_STATE = fleetAppSetupState.stateName
 
@@ -32,14 +33,20 @@ const appStates: Record<string, AppState> = {
 const selectAppState = (store: Store) => store.appState
 
 export default {
-  beginCombat: () => {
+  reset: () => {
+    store = baseStore
+  },
+  initialize: (): [any, AppStateParameters] => {
     store = baseStore
 
     store = setAppState(store, INITIAL_APP_STATE)
-    return appStates[selectAppState(store)!].parameters
+    const nextAppState = appStates[selectAppState(store)!]
+    return [nextAppState.getStateEntryValues(store), nextAppState.parameters]
   },
-  moveToNextStep: (appStateParameters: AppStateParametersObject) => {
-    if (store.appState === null) {
+  moveToNextStep: (
+    appStateParameters: AppStateParametersObject
+  ): [object, AppStateParameters] | null => {
+    if (!store || store.appState === null) {
       throw Error('Combat not initialized: call beginCombat() first!')
     }
 

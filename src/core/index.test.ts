@@ -1,17 +1,17 @@
-import {
+import fleetAppState, {
   Capacity,
   CombatValue,
   FLEET_SETUP_ATTACKER,
   FLEET_SETUP_DEFENDER,
   HasSustainDamage,
 } from './appStates/fleetSetupState'
-import {
+import combatAppState, {
   COMBAT_ROLLS_ATTACKER,
   COMBAT_ROLLS_DEFENDER,
 } from './appStates/combatState'
-import core from './index'
+import core, { AppStateParameters } from './index'
 import { createFleet } from './utils'
-import {
+import assignHitsAppState, {
   ASSIGNED_HITS_ATTACKER,
   ASSIGNED_HITS_DEFENDER,
 } from './appStates/assignHitsState'
@@ -45,59 +45,206 @@ const DEFENDER_SHIP: ShipTuple = [
 const mockAttackerFleet = createFleet(...ATTACKER_SHIP)
 const mockDefenderFleet = createFleet(...DEFENDER_SHIP)
 
-test('should run combat with valid inputs', () => {
-  let nextStateParameters = core.beginCombat()
-  expect(nextStateParameters).toContain(FLEET_SETUP_DEFENDER)
-  expect(nextStateParameters).toContain(FLEET_SETUP_ATTACKER)
-  let nextStateInitialData: any = {}
+interface AppStateIOData {
+  receivedNextStateInitialData: any
+  requestedParameters: AppStateParameters
+  parameters: object
+}
 
-  let nextState = core.moveToNextStep({
-    [FLEET_SETUP_DEFENDER]: [mockDefenderFleet],
-    [FLEET_SETUP_ATTACKER]: [mockAttackerFleet],
-  })!
+const VALID_STATES: Record<string, AppStateIOData> = {
+  [fleetAppState.stateName]: {
+    receivedNextStateInitialData: {},
+    requestedParameters: [FLEET_SETUP_DEFENDER, FLEET_SETUP_ATTACKER],
+    parameters: {
+      [FLEET_SETUP_DEFENDER]: [mockDefenderFleet],
+      [FLEET_SETUP_ATTACKER]: [mockAttackerFleet],
+    },
+  },
+  [combatAppState.stateName]: {
+    receivedNextStateInitialData: {
+      attacker: [
+        {
+          numberOfRolls: ATTACKER_SHIPS_QUANTITY,
+          difficulty: ATTACKER_SHIPS_COMBAT_VALUE,
+        },
+      ],
+      defender: [
+        {
+          numberOfRolls: DEFENDER_SHIPS_QUANTITY,
+          difficulty: DEFENDER_SHIPS_COMBAT_VALUE,
+        },
+      ],
+    },
+    requestedParameters: [COMBAT_ROLLS_ATTACKER, COMBAT_ROLLS_DEFENDER],
+    parameters: {
+      [COMBAT_ROLLS_ATTACKER]: 3,
+      [COMBAT_ROLLS_DEFENDER]: 2,
+    },
+  },
+  [assignHitsAppState.stateName]: {
+    receivedNextStateInitialData: {
+      attacker: 2,
+      defender: 3,
+    },
+    requestedParameters: [ASSIGNED_HITS_ATTACKER, ASSIGNED_HITS_DEFENDER],
+    parameters: {
+      [ASSIGNED_HITS_ATTACKER]: [
+        { fleetIdentifier: 0, numberOfAssignments: 2 },
+      ],
+      [ASSIGNED_HITS_DEFENDER]: [
+        { fleetIdentifier: 0, numberOfAssignments: 3 },
+      ],
+    },
+  },
+}
 
-  nextStateInitialData = nextState[0]
-  expect(nextStateInitialData).toHaveProperty('attacker')
-  expect(nextStateInitialData).toHaveProperty('defender')
+const moveToState = (stateName: string, returnAtStateEnd: boolean) => {
+  core.initialize()
+  let state
+  for (const key of Object.keys(VALID_STATES)) {
+    if (key === stateName && !returnAtStateEnd) {
+      return state
+    }
 
-  expect(nextStateInitialData.attacker[0]).toEqual({
-    numberOfRolls: ATTACKER_SHIPS_QUANTITY,
-    difficulty: ATTACKER_SHIPS_COMBAT_VALUE,
+    const stateData = VALID_STATES[key]
+    state = core.moveToNextStep(stateData.parameters)
+
+    if (key === stateName && returnAtStateEnd) {
+      return state
+    }
+  }
+}
+
+describe('Core logic tests', () => {
+  afterEach(() => {
+    core.reset()
   })
 
-  expect(nextStateInitialData.defender[0]).toEqual({
-    numberOfRolls: DEFENDER_SHIPS_QUANTITY,
-    difficulty: DEFENDER_SHIPS_COMBAT_VALUE,
+  test('should throw an error if beginCombat is not called first', () => {
+    expect(() =>
+      core.moveToNextStep({
+        [FLEET_SETUP_DEFENDER]: [mockDefenderFleet],
+        [FLEET_SETUP_ATTACKER]: [mockAttackerFleet],
+      })
+    ).toThrowError()
   })
 
-  nextStateParameters = nextState[1]
+  test('should run combat with valid inputs', () => {
+    let [nextStateInitialData, nextStateParameters] = core.initialize()
+    const fleetSetupStateData = VALID_STATES[fleetAppState.stateName]
+    expect(nextStateParameters).toEqual(fleetSetupStateData.requestedParameters)
 
-  expect(nextStateParameters).toEqual([
-    COMBAT_ROLLS_ATTACKER,
-    COMBAT_ROLLS_DEFENDER,
-  ])
+    let nextState = core.moveToNextStep(fleetSetupStateData.parameters)!
 
-  nextState = core.moveToNextStep({
-    [COMBAT_ROLLS_ATTACKER]: 3,
-    [COMBAT_ROLLS_DEFENDER]: 2,
-  })!
+    const combatStateData = VALID_STATES[combatAppState.stateName]
 
-  nextStateInitialData = nextState[0]
+    nextStateInitialData = nextState[0]
+    expect(nextStateInitialData).toEqual(
+      combatStateData.receivedNextStateInitialData
+    )
 
-  expect(nextStateInitialData.attacker).toEqual(3)
-  expect(nextStateInitialData.defender).toEqual(2)
+    nextStateParameters = nextState[1]
+    expect(nextStateParameters).toEqual(combatStateData.requestedParameters)
 
-  nextStateParameters = nextState[1]
+    nextState = core.moveToNextStep(combatStateData.parameters)!
 
-  expect(nextStateParameters).toEqual([
-    ASSIGNED_HITS_ATTACKER,
-    ASSIGNED_HITS_DEFENDER,
-  ])
+    const assignHitsStateData = VALID_STATES[assignHitsAppState.stateName]
 
-  const finalState: null = core.moveToNextStep({
-    [ASSIGNED_HITS_ATTACKER]: [{ fleetIdentifier: 0, numberOfAssignments: 2 }],
-    [ASSIGNED_HITS_DEFENDER]: [{ fleetIdentifier: 0, numberOfAssignments: 3 }],
-  }) as null
+    nextStateInitialData = nextState[0]
 
-  expect(finalState).toBeNull()
+    expect(nextStateInitialData).toEqual(
+      assignHitsStateData.receivedNextStateInitialData
+    )
+
+    nextStateParameters = nextState[1]
+
+    expect(nextStateParameters).toEqual(assignHitsStateData.requestedParameters)
+
+    const finalState: null = (core.moveToNextStep(
+      assignHitsStateData.parameters
+    )! as unknown) as null
+
+    expect(finalState).toBeNull()
+  })
+
+  test('should repeat assign hits state if all hits are not assigned', () => {
+    moveToState(assignHitsAppState.stateName, false)
+
+    const parameters = {
+      [ASSIGNED_HITS_ATTACKER]: [
+        { fleetIdentifier: 0, numberOfAssignments: 2 },
+      ],
+      [ASSIGNED_HITS_DEFENDER]: [
+        { fleetIdentifier: 0, numberOfAssignments: 2 },
+      ],
+    }
+
+    const nextState = core.moveToNextStep(parameters)!
+
+    const expectedNextStateInitialData = {
+      attacker: 0,
+      defender: 1,
+    }
+
+    expect(nextState[0]).toEqual(expectedNextStateInitialData)
+
+    const finalState: null = (core.moveToNextStep({
+      [ASSIGNED_HITS_ATTACKER]: [
+        { fleetIdentifier: 0, numberOfAssignments: 0 },
+      ],
+      [ASSIGNED_HITS_DEFENDER]: [
+        { fleetIdentifier: 0, numberOfAssignments: 1 },
+      ],
+    })! as unknown) as null
+
+    expect(finalState).toBeNull()
+  })
+
+  test('should go back to combat state if either fleet has ships remaining', () => {
+    moveToState(combatAppState.stateName, false)
+
+    const attackerHitsScored = 1
+    const defenderHitsScored = 1
+
+    const combatStateParametersFirst = {
+      [COMBAT_ROLLS_ATTACKER]: attackerHitsScored,
+      [COMBAT_ROLLS_DEFENDER]: defenderHitsScored,
+    }
+
+    let nextState = core.moveToNextStep(combatStateParametersFirst)!
+
+    const expectedNextStateInitialData = {
+      attacker: defenderHitsScored,
+      defender: attackerHitsScored,
+    }
+
+    expect(nextState[0]).toEqual(expectedNextStateInitialData)!
+
+    const assignHitsStateParametersFirst = {
+      [ASSIGNED_HITS_ATTACKER]: [
+        { fleetIdentifier: 0, numberOfAssignments: defenderHitsScored },
+      ],
+      [ASSIGNED_HITS_DEFENDER]: [
+        { fleetIdentifier: 0, numberOfAssignments: attackerHitsScored },
+      ],
+    }
+
+    nextState = core.moveToNextStep(assignHitsStateParametersFirst)!
+
+    const expectedInitialData = {
+      attacker: [
+        {
+          numberOfRolls: ATTACKER_SHIPS_QUANTITY - defenderHitsScored,
+          difficulty: ATTACKER_SHIPS_COMBAT_VALUE,
+        },
+      ],
+      defender: [
+        {
+          numberOfRolls: DEFENDER_SHIPS_QUANTITY - attackerHitsScored,
+          difficulty: DEFENDER_SHIPS_COMBAT_VALUE,
+        },
+      ],
+    }
+    expect(nextState[0]).toEqual(expectedInitialData)
+  })
 })

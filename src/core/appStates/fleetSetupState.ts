@@ -41,9 +41,7 @@ const fleetAppState: AppState = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
   parameters: [FLEET_SETUP_DEFENDER, FLEET_SETUP_ATTACKER],
-  getStateEntryValues: () => {
-    return null
-  },
+  getStateEntryValues: () => ({}),
 }
 
 export default fleetAppState

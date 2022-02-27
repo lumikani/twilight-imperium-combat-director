@@ -21,8 +21,10 @@ const appStateRenderers: Record<string, Function> = {
 }
 
 const main = async () => {
-  let nextStateParameters: AppStateParameters = core.beginCombat()
-  let nextStateInitialData: any = {}
+  let [nextStateInitialData, nextStateParameters]: [
+    object,
+    AppStateParameters
+  ] = core.initialize()
 
   while (nextStateParameters.length > 0) {
     const parameters: AppStateParametersObject = {}
