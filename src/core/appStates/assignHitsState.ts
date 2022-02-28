@@ -69,15 +69,14 @@ const doTheThing = (
 type HitsScored = PlayerStore['hitsScored']
 type FleetWithSustainDamages = [number, number]
 
+export interface AssignHitsInstructions {
+  hitsToAssign: HitsScored
+  potentialSustainDamages: FleetWithSustainDamages[]
+}
+
 export interface AssignHitsStateEntryValues {
-  attacker: {
-    hitsToAssign: HitsScored
-    potentialSustainDamages: FleetWithSustainDamages[]
-  }
-  defender: {
-    hitsToAssign: HitsScored
-    potentialSustainDamages: FleetWithSustainDamages[]
-  }
+  attacker: AssignHitsInstructions
+  defender: AssignHitsInstructions
 }
 
 const getSustainDamageFleetIdentifiersAndAmounts = (

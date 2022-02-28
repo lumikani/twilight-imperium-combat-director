@@ -5,6 +5,7 @@ import {
 } from '../core/appStates/fleetSetupState'
 import { AppStateParameters, AppStateParametersObject } from '../core/'
 import {
+  createAssignHitsStateRenderer,
   createCombatStateRenderer,
   createFleetSetupRenderer,
 } from './renderers'
@@ -12,12 +13,18 @@ import {
   COMBAT_ROLLS_ATTACKER,
   COMBAT_ROLLS_DEFENDER,
 } from '../core/appStates/combatState'
+import {
+  ASSIGNED_HITS_ATTACKER,
+  ASSIGNED_HITS_DEFENDER,
+} from '../core/appStates/assignHitsState'
 
 const appStateRenderers: Record<string, Function> = {
   [FLEET_SETUP_DEFENDER]: createFleetSetupRenderer('defender'),
   [FLEET_SETUP_ATTACKER]: createFleetSetupRenderer('attacker'),
   [COMBAT_ROLLS_ATTACKER]: createCombatStateRenderer('attacker'),
   [COMBAT_ROLLS_DEFENDER]: createCombatStateRenderer('defender'),
+  [ASSIGNED_HITS_DEFENDER]: createAssignHitsStateRenderer('defender'),
+  [ASSIGNED_HITS_ATTACKER]: createAssignHitsStateRenderer('attacker'),
 }
 
 const main = async () => {
