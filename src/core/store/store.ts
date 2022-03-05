@@ -65,8 +65,14 @@ export const assignHitsReceivedAttacker = produce(
 
 export const assignHitsReceivedDefender = produce(
   (draft: Draft<Store>, hitsAssignment: HitsAssignment) => {
-    const { fleetIdentifier, numberOfAssignments } = hitsAssignment
-    draft.defender.fleets[fleetIdentifier].splice(0, numberOfAssignments)
+    const {
+      fleetIdentifier,
+      numberOfAssignments,
+      shouldUseSustainDamage,
+    } = hitsAssignment
+    if (!shouldUseSustainDamage) {
+      draft.defender.fleets[fleetIdentifier].splice(0, numberOfAssignments)
+    }
     draft.attacker.hitsScored = draft.attacker.hitsScored - numberOfAssignments
   }
 )

@@ -8,6 +8,7 @@ import {
 } from '../store/store'
 import { Combatant } from './combatState'
 import { AppState, AppStateParameters } from '../'
+import { CombatValue, HasSustainDamage } from './fleetSetupState'
 
 const APP_STATE_NAME = 'ASSIGN_HITS_STATE'
 
@@ -22,6 +23,7 @@ type NumberOfAssignments = number
 export interface HitsAssignment {
   fleetIdentifier: FleetIdentifier
   numberOfAssignments: NumberOfAssignments
+  shouldUseSustainDamage?: boolean
 }
 
 interface AssignHitsAppStateParameters extends AppStateParameters {
@@ -67,11 +69,19 @@ const doTheThing = (
 }
 
 type HitsScored = PlayerStore['hitsScored']
-type FleetWithSustainDamages = [number, number]
+export type FleetWithSustainDamages = [number, number]
+
+export interface FleetData {
+  fleetIdentifier: number
+  numberOfShips: number
+  hasSustainDamage: HasSustainDamage
+  combatValue: CombatValue
+}
 
 export interface AssignHitsInstructions {
   hitsToAssign: HitsScored
   potentialSustainDamages: FleetWithSustainDamages[]
+  allFleets: FleetData[]
 }
 
 export interface AssignHitsStateEntryValues {
@@ -94,6 +104,18 @@ const getSustainDamageFleetIdentifiersAndAmounts = (
   )
 }
 
+const getFleetData = (store: Store, combatant: Combatant) => {
+  return store[combatant].fleets.reduce((acc: FleetData[], fleet, index) => {
+    acc.push({
+      fleetIdentifier: index,
+      combatValue: fleet[0].combatValue,
+      numberOfShips: fleet.length,
+      hasSustainDamage: fleet[0].hasSustainDamage,
+    })
+    return acc
+  }, [])
+}
+
 const assignHitsAppState: AppState = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
@@ -104,6 +126,7 @@ const assignHitsAppState: AppState = {
         store,
         'attacker'
       ),
+      allFleets: getFleetData(store, 'attacker'),
     },
     defender: {
       hitsToAssign: getHitsScored(store, 'attacker'),
@@ -111,6 +134,7 @@ const assignHitsAppState: AppState = {
         store,
         'defender'
       ),
+      allFleets: getFleetData(store, 'defender'),
     },
   }),
   parameters: [ASSIGNED_HITS_ATTACKER, ASSIGNED_HITS_DEFENDER],

@@ -14,6 +14,7 @@ import { createFleet } from './utils'
 import assignHitsAppState, {
   ASSIGNED_HITS_ATTACKER,
   ASSIGNED_HITS_DEFENDER,
+  HitsAssignment,
 } from './appStates/assignHitsState'
 
 const ATTACKER_SHIPS_QUANTITY = 5
@@ -83,8 +84,30 @@ const VALID_STATES: Record<string, AppStateIOData> = {
   },
   [assignHitsAppState.stateName]: {
     receivedNextStateInitialData: {
-      attacker: { hitsToAssign: 2, potentialSustainDamages: [] },
-      defender: { hitsToAssign: 3, potentialSustainDamages: [[0, 3]] },
+      attacker: {
+        hitsToAssign: 2,
+        potentialSustainDamages: [],
+        allFleets: [
+          {
+            combatValue: ATTACKER_SHIPS_COMBAT_VALUE,
+            fleetIdentifier: 0,
+            hasSustainDamage: ATTACKER_SHIPS_HAS_SUSTAIN_DAMAGE,
+            numberOfShips: ATTACKER_SHIPS_QUANTITY,
+          },
+        ],
+      },
+      defender: {
+        hitsToAssign: 3,
+        potentialSustainDamages: [[0, 3]],
+        allFleets: [
+          {
+            combatValue: DEFENDER_SHIPS_COMBAT_VALUE,
+            fleetIdentifier: 0,
+            hasSustainDamage: DEFENDER_SHIPS_HAS_SUSTAIN_DAMAGE,
+            numberOfShips: DEFENDER_SHIPS_QUANTITY,
+          },
+        ],
+      },
     },
     requestedParameters: [ASSIGNED_HITS_ATTACKER, ASSIGNED_HITS_DEFENDER],
     parameters: {
@@ -182,8 +205,30 @@ describe('Core logic tests', () => {
     const nextState = core.moveToNextStep(parameters)!
 
     const expectedNextStateInitialData = {
-      attacker: { hitsToAssign: 0, potentialSustainDamages: [] },
-      defender: { hitsToAssign: 1, potentialSustainDamages: [[0, 1]] },
+      attacker: {
+        hitsToAssign: 0,
+        potentialSustainDamages: [],
+        allFleets: [
+          {
+            combatValue: ATTACKER_SHIPS_COMBAT_VALUE,
+            fleetIdentifier: 0,
+            hasSustainDamage: ATTACKER_SHIPS_HAS_SUSTAIN_DAMAGE,
+            numberOfShips: 3,
+          },
+        ],
+      },
+      defender: {
+        hitsToAssign: 1,
+        potentialSustainDamages: [[0, 1]],
+        allFleets: [
+          {
+            combatValue: DEFENDER_SHIPS_COMBAT_VALUE,
+            fleetIdentifier: 0,
+            hasSustainDamage: DEFENDER_SHIPS_HAS_SUSTAIN_DAMAGE,
+            numberOfShips: 1,
+          },
+        ],
+      },
     }
 
     expect(nextState[0]).toEqual(expectedNextStateInitialData)
@@ -217,10 +262,26 @@ describe('Core logic tests', () => {
       attacker: {
         hitsToAssign: defenderHitsScored,
         potentialSustainDamages: [],
+        allFleets: [
+          {
+            combatValue: ATTACKER_SHIPS_COMBAT_VALUE,
+            fleetIdentifier: 0,
+            hasSustainDamage: ATTACKER_SHIPS_HAS_SUSTAIN_DAMAGE,
+            numberOfShips: 5,
+          },
+        ],
       },
       defender: {
         hitsToAssign: attackerHitsScored,
         potentialSustainDamages: [[0, 3]],
+        allFleets: [
+          {
+            combatValue: DEFENDER_SHIPS_COMBAT_VALUE,
+            fleetIdentifier: 0,
+            hasSustainDamage: DEFENDER_SHIPS_HAS_SUSTAIN_DAMAGE,
+            numberOfShips: 3,
+          },
+        ],
       },
     }
 
@@ -251,6 +312,40 @@ describe('Core logic tests', () => {
         },
       ],
     }
+    expect(nextState[0]).toEqual(expectedInitialData)
+  })
+
+  test('should go back to combat state with fleet that used sustained damage not destroyed', () => {
+    moveToState(assignHitsAppState.stateName, false)
+
+    const parameters: Record<string, HitsAssignment[]> = {
+      [ASSIGNED_HITS_ATTACKER]: [
+        { fleetIdentifier: 0, numberOfAssignments: 2 },
+      ],
+      [ASSIGNED_HITS_DEFENDER]: [
+        {
+          fleetIdentifier: 0,
+          numberOfAssignments: 3,
+          shouldUseSustainDamage: true,
+        },
+      ],
+    }
+
+    const nextState = core.moveToNextStep(parameters)!
+    const {
+      receivedNextStateInitialData: { defender },
+    } = VALID_STATES[combatAppState.stateName]
+
+    const expectedInitialData = {
+      attacker: [
+        {
+          difficulty: 7,
+          numberOfRolls: 3,
+        },
+      ],
+      defender,
+    }
+
     expect(nextState[0]).toEqual(expectedInitialData)
   })
 })

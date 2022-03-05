@@ -5,7 +5,7 @@ export interface Question {
   type: PromptType
   name: string
   message: string
-  choices?: string[]
+  choices?: string[] | QuestionObject[]
   default?: DefaultValueType
 }
 
@@ -40,12 +40,21 @@ export const createBooleanChoice = (
   defaultValue?: boolean
 ): Question => createInquirerQuestion('confirm', name, question, defaultValue)
 
+export interface QuestionObject {
+  name: string
+  value: string | number
+}
+
 export const createList = (
   name: string,
   question: string,
-  choices: string[],
+  choices: string[] | QuestionObject[],
   defaultValue: string | number
 ): Question => ({
   ...createInquirerQuestion('list', name, question, defaultValue),
   choices,
 })
+
+export const renderText = (text: string) => {
+  console.log(text)
+}
