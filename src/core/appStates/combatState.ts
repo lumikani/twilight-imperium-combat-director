@@ -3,7 +3,7 @@ import {
   setHitsScoredAttacker,
   setHitsScoredDefender,
 } from '../store/store'
-import { AppState } from '..'
+import { AppStateInterface } from '..'
 import assignHitsAppState from './assignHitsState'
 
 const APP_STATE_NAME = 'COMBAT_STATE'
@@ -12,8 +12,7 @@ const NEXT_APP_STATE_NAME = assignHitsAppState.stateName
 export const COMBAT_ROLLS_ATTACKER = 'COMBAT_ROLLS_ATTACKER'
 export const COMBAT_ROLLS_DEFENDER = 'COMBAT_ROLLS_DEFENDER'
 
-type AppStateParameters = object
-interface CombatAppStateParameters extends AppStateParameters {
+export interface CombatAppStateParameters {
   [COMBAT_ROLLS_DEFENDER]: number
   [COMBAT_ROLLS_ATTACKER]: number
 }
@@ -51,15 +50,18 @@ const getRollInstructions = (
   return rollInstructions
 }
 
-export interface CombatStateEntryValues {
+export interface CombatAppStateEntryValues {
   attacker: RollInstruction[]
   defender: RollInstruction[]
 }
 
-const combatAppState: AppState = {
+const combatAppState: AppStateInterface<
+  CombatAppStateParameters,
+  CombatAppStateEntryValues
+> = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
-  getStateEntryValues: (store: Store): CombatStateEntryValues => ({
+  getStateEntryValues: (store: Store): CombatAppStateEntryValues => ({
     attacker: getRollInstructions(store, 'attacker'),
     defender: getRollInstructions(store, 'defender'),
   }),

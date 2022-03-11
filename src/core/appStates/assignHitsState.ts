@@ -7,7 +7,7 @@ import {
   Store,
 } from '../store/store'
 import { Combatant } from './combatState'
-import { AppState, AppStateParameters } from '../'
+import { AppStateInterface } from '../'
 import { CombatValue, HasSustainDamage } from './fleetSetupState'
 
 const APP_STATE_NAME = 'ASSIGN_HITS_STATE'
@@ -26,7 +26,7 @@ export interface HitsAssignment {
   shouldUseSustainDamage?: boolean
 }
 
-interface AssignHitsAppStateParameters extends AppStateParameters {
+export interface AssignHitsAppStateParameters {
   [ASSIGNED_HITS_DEFENDER]: HitsAssignment[]
   [ASSIGNED_HITS_ATTACKER]: HitsAssignment[]
 }
@@ -84,7 +84,7 @@ export interface AssignHitsInstructions {
   allFleets: FleetData[]
 }
 
-export interface AssignHitsStateEntryValues {
+export interface AssignHitsAppStateEntryValues {
   attacker: AssignHitsInstructions
   defender: AssignHitsInstructions
 }
@@ -116,10 +116,13 @@ const getFleetData = (store: Store, combatant: Combatant) => {
   }, [])
 }
 
-const assignHitsAppState: AppState = {
+const assignHitsAppState: AppStateInterface<
+  AssignHitsAppStateParameters,
+  AssignHitsAppStateEntryValues
+> = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
-  getStateEntryValues: (store: Store): AssignHitsStateEntryValues => ({
+  getStateEntryValues: (store: Store): AssignHitsAppStateEntryValues => ({
     attacker: {
       hitsToAssign: getHitsScored(store, 'defender'),
       potentialSustainDamages: getSustainDamageFleetIdentifiersAndAmounts(

@@ -1,6 +1,6 @@
-import assignHitsState from './appStates/assignHitsState'
-import combatAppState from './appStates/combatState'
-import fleetAppSetupState from './appStates/fleetSetupState'
+import assignHitsState, { AssignHitsAppStateEntryValues, AssignHitsAppStateParameters } from './appStates/assignHitsState'
+import combatAppState, { CombatAppStateEntryValues, CombatAppStateParameters } from './appStates/combatState'
+import fleetAppSetupState, { FleetSetupAppStateEntryValues, FleetSetupAppStateParameters } from './appStates/fleetSetupState'
 import { baseStore, setAppState, Store } from './store/store'
 
 // Handy for debugging values in the store etc
@@ -10,21 +10,30 @@ import { baseStore, setAppState, Store } from './store/store'
 
 const INITIAL_APP_STATE = fleetAppSetupState.stateName
 
-export type AppStateParameters = string[]
 export type AppStateParametersObject = any
-export interface AppState {
-  stateName: string
-  runState: (
-    store: Store,
-    parameters: AppStateParametersObject
-  ) => [Store, string]
-  parameters: string[]
-  getStateEntryValues: (store: Store) => any
+export type AppStateName =
+  | 'FLEET_SETUP_STATE'
+  | 'COMBAT_STATE'
+  | 'ASSIGN_HITS_STATE'
+
+export type AppStateParameters = FleetSetupAppStateParameters | CombatAppStateParameters | AssignHitsAppStateParameters
+export type AppStateEntryValues = FleetSetupAppStateEntryValues | CombatAppStateEntryValues | AssignHitsAppStateEntryValues
+
+export type FleetSetupState = AppStateInterface<FleetSetupAppStateParameters, FleetSetupAppStateEntryValues>;
+export type CombatState = AppStateInterface<CombatAppStateParameters, CombatAppStateEntryValues>;
+export type AssignHitsState = AppStateInterface<AssignHitsAppStateParameters, AssignHitsAppStateEntryValues>
+
+export type AppState = FleetSetupState | CombatState | AssignHitsState
+export interface AppStateInterface<T, K> {
+  stateName: AppStateName
+  runState: (store: Store, parameters: T) => [Store, string]
+  parameters: keyof T[]
+  getStateEntryValues: (store: Store) => K
 }
 
 let store: Store
 
-const appStates: Record<string, AppState> = {
+const appStates: Record<AppStateName, AppState> = {
   [fleetAppSetupState.stateName]: fleetAppSetupState,
   [combatAppState.stateName]: combatAppState,
   [assignHitsState.stateName]: assignHitsState,
@@ -32,7 +41,12 @@ const appStates: Record<string, AppState> = {
 
 const selectAppState = (store: Store) => store.appState
 
-export default {
+interface AppCore {
+  reset: () => void
+  initialize: 
+}
+
+const core: AppCore = {
   reset: () => {
     store = baseStore
   },
@@ -40,7 +54,7 @@ export default {
     store = baseStore
 
     store = setAppState(store, INITIAL_APP_STATE)
-    const nextAppState = appStates[selectAppState(store)!]
+    const nextAppState = appStates[selectAppState(store)]
     return [nextAppState.getStateEntryValues(store), nextAppState.parameters]
   },
   moveToNextStep: (
@@ -71,3 +85,5 @@ export default {
     return [nextAppState.getStateEntryValues(store), nextAppState.parameters]
   },
 }
+
+export default core

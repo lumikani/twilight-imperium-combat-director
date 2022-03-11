@@ -1,5 +1,5 @@
 import { Store, setAttackerFleets, setDefenderFleets } from '../store/store'
-import { AppState } from '..'
+import { AppStateInterface } from '..'
 import combatAppState from './combatState'
 
 const APP_STATE_NAME = 'FLEET_SETUP_STATE'
@@ -19,8 +19,7 @@ export interface Ship {
 export const FLEET_SETUP_ATTACKER = 'FLEET_SETUP_ATTACKER'
 export const FLEET_SETUP_DEFENDER = 'FLEET_SETUP_DEFENDER'
 
-type AppStateParameters = object
-interface FleetSetupAppStateParameters extends AppStateParameters {
+export interface FleetSetupAppStateParameters {
   [FLEET_SETUP_DEFENDER]: Fleet[]
   [FLEET_SETUP_ATTACKER]: Fleet[]
 }
@@ -37,7 +36,12 @@ const doTheThing = (
   return [nextStore, NEXT_APP_STATE_NAME]
 }
 
-const fleetAppState: AppState = {
+export type FleetSetupAppStateEntryValues = {}
+
+const fleetAppState: AppStateInterface<
+  FleetSetupAppStateParameters,
+  FleetSetupAppStateEntryValues
+> = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
   parameters: [FLEET_SETUP_DEFENDER, FLEET_SETUP_ATTACKER],

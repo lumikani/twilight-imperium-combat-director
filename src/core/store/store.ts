@@ -1,4 +1,5 @@
 import produce, { Draft } from 'immer'
+import { AppStateName } from '..'
 import { HitsAssignment } from '../appStates/assignHitsState'
 import { Fleet } from '../appStates/fleetSetupState'
 
@@ -8,13 +9,13 @@ export interface PlayerStore {
 }
 
 export interface Store {
-  appState: string | null
+  appState: AppStateName
   attacker: PlayerStore
   defender: PlayerStore
 }
 
 export const baseStore: Store = Object.freeze({
-  appState: null,
+  appState: 'FLEET_SETUP_STATE',
   attacker: {
     fleets: [],
     hitsScored: 0,
@@ -26,7 +27,7 @@ export const baseStore: Store = Object.freeze({
 })
 
 export const setAppState = produce(
-  (draft: Draft<Store>, newAppState: string) => {
+  (draft: Draft<Store>, newAppState: AppStateName) => {
     draft.appState = newAppState
   }
 )
