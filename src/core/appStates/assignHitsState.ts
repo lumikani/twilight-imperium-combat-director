@@ -7,10 +7,10 @@ import {
   Store,
 } from '../store/store'
 import { Combatant } from './combatState'
-import { AppStateInterface } from '../'
+import { AppStateName, AppStateParameters, AssignHitsState } from '../'
 import { CombatValue, HasSustainDamage } from './fleetSetupState'
 
-const APP_STATE_NAME = 'ASSIGN_HITS_STATE'
+export const APP_STATE_NAME = 'ASSIGN_HITS_STATE'
 
 const NEXT_APP_STATE_NAME = 'COMBAT_STATE'
 
@@ -26,7 +26,7 @@ export interface HitsAssignment {
   shouldUseSustainDamage?: boolean
 }
 
-export interface AssignHitsAppStateParameters {
+export interface AssignHitsAppStateParameters extends AppStateParameters {
   [ASSIGNED_HITS_DEFENDER]: HitsAssignment[]
   [ASSIGNED_HITS_ATTACKER]: HitsAssignment[]
 }
@@ -37,7 +37,7 @@ const getHitsScored = (store: Store, combatant: Combatant) =>
 const doTheThing = (
   store: Store,
   parameters: AssignHitsAppStateParameters
-): [Store, string] => {
+): [Store, AppStateName] => {
   parameters[ASSIGNED_HITS_ATTACKER].forEach((hitsAssignment) => {
     store = assignHitsReceivedAttacker(store, hitsAssignment)
   })
@@ -50,7 +50,7 @@ const doTheThing = (
   const defenderFleetSize = getDefenderFleetSize(store)
 
   if (attackerFleetSize === 0 || defenderFleetSize === 0) {
-    return [store, '']
+    return [store, APP_STATE_NAME] // Should return finish state
   }
 
   const attackerHitsScoredLeft = getHitsScored(store, 'attacker')
@@ -116,10 +116,7 @@ const getFleetData = (store: Store, combatant: Combatant) => {
   }, [])
 }
 
-const assignHitsAppState: AppStateInterface<
-  AssignHitsAppStateParameters,
-  AssignHitsAppStateEntryValues
-> = {
+const assignHitsAppState: AssignHitsState = {
   stateName: APP_STATE_NAME,
   runState: doTheThing,
   getStateEntryValues: (store: Store): AssignHitsAppStateEntryValues => ({
